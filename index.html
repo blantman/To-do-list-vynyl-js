@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      .general{
+        text-align: center;
+      }
+      .create-form{
+        width: 550px;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+        margin-bottom: 25px;
+      }
+
+      .filter-field{
+        align-items: center;
+        height: 35px;
+        width: 500px;
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+      }
+
+      .project-name{
+        font-size: 50px;
+      }
+
+      .text-field {
+        border-radius: 5%;
+        padding: 8px 12px;
+      }
+
+      .cta {
+        color: white;
+        background-color: blue;
+        border-radius: 10px;
+      }
+
+      .cta[disabled='true'] {
+        background-color: gray;
+      }
+
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .todoList {
+        list-style: none;
+      }
+
+      .todo {
+        margin: 8px;
+        background: white;
+        font-size: 25px;
+        color: black;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .todoItem {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        width: 420px;
+      }
+
+      .trash{
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 5px;
+        cursor: pointer;
+      } 
+
+      .label{
+        text-align: center;
+        display: inline-block;
+        border-radius: 2px;
+        padding: 4px 16px;
+        min-width: 50px;
+        background-color: blue;
+        cursor: pointer;
+      }
+
+      .label--orange{
+        background-color: orange;
+      }
+
+    </style>
+</head>
+<body>
+  <header class="general">
+    <h1 class="project-name">Task Maneger</h1>
+    <form name="create_task" class="create-form">
+      <input name="text" required id="create-form-input" class="text-field"/>
+      <select name="priority" class="text-field" id="ch">
+        <option value="0">
+          low
+        </option>
+        <option value="1">
+          medium
+        </option>
+        <option value="2">
+          high
+        </option>
+      </select >
+      <select name="status" class="text-field">
+        <option value="0"> 
+          Backlog
+        </option>
+        <option value="1">
+          In progres
+        </option>
+        <option value="2">
+          Done
+        </option>
+      </select>
+      <button type="submit" class="text-field cta">Create Task</button>
+    </form>
+    <div class="filter-field">
+      <h2>Filters:</h2>
+      <input name="text-filter" id="loocink-for-input" class="text-field"/>
+      <select>
+        <option>
+          all
+        </option>
+        <option>
+          Backlog
+        </option>
+        <option>
+          In progres
+        </option>
+        <option>
+          Done
+        </option>
+      </select>
+      <select>
+        <option>
+          By Status
+        </option>
+        <option>
+          By Date
+        </option>
+        <option>
+          By Priority
+        </option>
+      </select>
+    </div>
+    <div class="container">
+      <ul id="toDos" class="todoList"></ul>
+    </div>
+  </header>
+  <main>
+
+  </main>
+  <script>
+    let id = 0;
+    const form = document.forms.create_task;
+    const todoList = document.getElementById("toDos");
+    const selector = document.getElementById("ch");
+    const priority = {0: "low", 1: "medium", 2: "high"};
+    const status = {0: "Backlog", 1: "In progres", 2: "Done"};
+    let todos = [];
+    let filterInput = document.getElementById("loocink-for-input");
+
+    form.addEventListener("submit", function(e){
+      e.preventDefault()
+      const todo = {id, text: form.text.value, status: +form.status.value, priority: +form.priority.value};
+      id++;
+      form.text.value = "";
+      form.status.value = "0";
+      form.priority.value = "0";
+      todos.push(todo);
+      render();
+    })
+    
+    function render() {
+      /*function todoMaper(todo) {
+        const newTodo = document.createElement("li");
+        newTodo.classList.add("todoItem");
+      } */
+      let formattedTodos = [ ...todos ];
+      const filterValue = filterInput.value;
+      if(filterValue){ 
+        const regEx = new RegExp(filterValue, "gi");
+        formattedTodos = formattedTodos.filter(todo => todo.text.match(regEx))
+      }
+      // TODO: handle sort by status and by priority
+      todoList.innerHTML = formattedTodos.map(function(todo){
+        return `<li class="data-item" data-item="${todo.id}">${todo.text}<span class="label" data-action="priority">${priority[todo.priority]}</span><span class="label label--orange" data-action="status">${status[todo.status]}</span><button data-action="delete">delete</button></li> `;
+      }).join('')  
+    }
+
+    todoList.addEventListener('click', function(e){
+      const type = e.target?.getAttribute("data-action");
+
+      if(type){
+        const id = e.target?.parentElement?.getAttribute("data-item");
+        switch(type){
+          case "delete": {
+            todos = todos.filter(function(todo){
+              return todo.id != id;
+            });
+            break;
+          }
+          case "priority": {
+            todos = todos.map(function(todo){
+              console.log(id)
+              if(todo.id === +id){
+                todo.priority += 1;
+                console.log(todo.priority)
+              }
+              if(todo.priority > 2){
+                todo.priority = 0;
+              }
+              return todo;
+            });
+            break;
+          };
+          case "status": {
+            todos = todos.map(function(todo){
+              console.log(id)
+              if(todo.id === +id){
+                todo.status += 1;
+                console.log(todo.priority)
+              }
+              if(todo.status > 2){
+                todo.status = 0;
+              }
+              return todo;
+            });
+            break;
+          };
+        }
+      }
+      render();
+    })
+    filterInput.addEventListener("keyup", render);
+  </script>
+</body>
+</html>
